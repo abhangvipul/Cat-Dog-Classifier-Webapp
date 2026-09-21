@@ -57,13 +57,18 @@ st.markdown("""
         background-color: rgba(255, 255, 255, 0.05) !important;
         border: 2px dashed rgba(56, 189, 248, 0.4) !important;
         border-radius: 12px !important;
-        padding: 20px !important;
+        padding: 30px 20px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
     }
     
     /* Fix top label color visibility */
     div[data-testid="stFileUploader"] label p {
         color: #f8fafc !important;
         font-weight: 600 !important;
+        font-size: 1.1rem !important;
     }
     
     /* Fix browser's default helper text ("Browse files", "200MB per file", etc.) */
@@ -71,15 +76,17 @@ st.markdown("""
     div[data-testid="stFileUploader"] section span, 
     div[data-testid="stFileUploader"] section small {
         color: #cbd5e1 !important;
+        font-size: 0.9rem !important;
     }
     
-    /* Style the native browser "Browse files" button wrapper to pop explicitly */
+    /* Style the native browser "Browse files" button explicitly */
     div[data-testid="stFileUploader"] button {
         background-color: #38bdf8 !important;
         color: #0f172a !important;
         border-radius: 8px !important;
         font-weight: bold !important;
         border: none !important;
+        padding: 0.5rem 1.5rem !important;
     }
     
     /* --- END OF FIXED SECTION --- */

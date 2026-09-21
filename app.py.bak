@@ -8,7 +8,7 @@ import cv2
 # 1. Page Configuration
 st.set_page_config(page_title="Image Classifier", page_icon="🐾", layout="centered")
 
-# 2. Injecting Custom Modern CSS (Glassmorphism & Clean Typography)
+# 2. Injecting Custom Modern CSS (Glassmorphism, Clean Typography & Fixed FileUploader visibility)
 st.markdown("""
     <style>
     /* Main Background & Base Styling */
@@ -50,15 +50,49 @@ st.markdown("""
         margin-bottom: 2rem;
     }
     
-    /* Custom Styling for Streamlit's file uploader box to blend into the theme */
+    /* --- CRITICAL FILE UPLOADER VISIBILITY OVERRIDES --- */
+    
+    /* Force visibility on the drop container zone box layout */
     div[data-testid="stFileUploader"] section {
-        background-color: rgba(255, 255, 255, 0.02) !important;
-        border: 1px dashed rgba(255, 255, 255, 0.2) !important;
+        background-color: rgba(255, 255, 255, 0.05) !important;
+        border: 2px dashed rgba(56, 189, 248, 0.4) !important;
         border-radius: 12px !important;
+        padding: 30px 20px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
     }
-    div[data-testid="stFileUploader"] label {
-        color: #e2e8f0 !important;
+    
+    /* Force main label element visibility */
+    div[data-testid="stFileUploader"] label p {
+        color: #f8fafc !important;
+        font-weight: 600 !important;
+        font-size: 1.1rem !important;
     }
+    
+    /* Force deep internal children tags to inherit a crisp readable white tone */
+    div[data-testid="stFileUploader"] section data-testid,
+    div[data-testid="stFileUploader"] section div, 
+    div[data-testid="stFileUploader"] section span, 
+    div[data-testid="stFileUploader"] section small {
+        color: #cbd5e1 !important;
+        font-size: 0.9rem !important;
+    }
+    
+    /* Explicit target definition override for the local native "Browse files" button */
+    div[data-testid="stFileUploader"] button[data-testid="baseButton-secondary"] {
+        background-color: #38bdf8 !important;
+        color: #0f172a !important;
+        border-radius: 8px !important;
+        font-weight: 700 !important;
+        border: none !important;
+        padding: 0.5rem 1.5rem !important;
+        margin: 10px 0 !important;
+        box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3) !important;
+    }
+    
+    /* --- END OF FILE UPLOADER VISIBILITY OVERRIDES --- */
     
     /* Result styling */
     .result-box {
