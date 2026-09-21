@@ -1,0 +1,170 @@
+import streamlit as st
+import tensorflow as tf
+from tensorflow import keras
+import numpy as np
+from PIL import Image
+import cv2
+
+# 1. Page Configuration
+st.set_page_config(page_title="Image Classifier", page_icon="🐾", layout="centered")
+
+# 2. Injecting Custom Modern CSS (Glassmorphism, Clean Typography & Fixed FileUploader visibility)
+st.markdown("""
+    <style>
+    /* Main Background & Base Styling */
+    .stApp {
+        background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+        color: #f8fafc;
+    }
+    
+    /* Hide default Streamlit headers for a cleaner web app look */
+    header {visibility: hidden;}
+    footer {visibility: hidden;}
+    
+    /* Modern Container Card */
+    .modern-card {
+        background: rgba(255, 255, 255, 0.04);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 16px;
+        padding: 2.5rem;
+        margin-top: 1.5rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        text-align: center;
+    }
+    
+    /* Typography Adjustments */
+    .title-text {
+        font-family: 'Inter', sans-serif;
+        font-weight: 800;
+        letter-spacing: -0.5px;
+        background: linear-gradient(90deg, #38bdf8, #818cf8);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 0.5rem;
+    }
+    .subtitle-text {
+        color: #94a3b8;
+        font-size: 1.1rem;
+        margin-bottom: 2rem;
+    }
+    
+    /* --- FIXED FILE UPLOADER VISIBILITY SECTION --- */
+    
+    /* Style the main drag & drop landing zone area */
+    div[data-testid="stFileUploader"] section {
+        background-color: rgba(255, 255, 255, 0.05) !important;
+        border: 2px dashed rgba(56, 189, 248, 0.4) !important;
+        border-radius: 12px !important;
+        padding: 20px !important;
+    }
+    
+    /* Fix top label color visibility */
+    div[data-testid="stFileUploader"] label p {
+        color: #f8fafc !important;
+        font-weight: 600 !important;
+    }
+    
+    /* Fix browser's default helper text ("Browse files", "200MB per file", etc.) */
+    div[data-testid="stFileUploader"] section div, 
+    div[data-testid="stFileUploader"] section span, 
+    div[data-testid="stFileUploader"] section small {
+        color: #cbd5e1 !important;
+    }
+    
+    /* Style the native browser "Browse files" button wrapper to pop explicitly */
+    div[data-testid="stFileUploader"] button {
+        background-color: #38bdf8 !important;
+        color: #0f172a !important;
+        border-radius: 8px !important;
+        font-weight: bold !important;
+        border: none !important;
+    }
+    
+    /* --- END OF FIXED SECTION --- */
+    
+    /* Result styling */
+    .result-box {
+        background: rgba(56, 189, 248, 0.08);
+        border-left: 5px solid #38bdf8;
+        padding: 1.5rem;
+        border-radius: 8px;
+        margin-top: 1.5rem;
+        text-align: left;
+    }
+    .result-title {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #f8fafc;
+        margin-bottom: 0.25rem;
+    }
+    .result-conf {
+        color: #38bdf8;
+        font-weight: 500;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
+# 3. App Header UI
+st.markdown('<h1 class="title-text">🐾 Cat vs Dog Identifier</h1>', unsafe_allow_html=True)
+st.markdown('<p class="subtitle-text">Upload a photo below and our deep learning model will analyze the features to determine the animal classification.</p>', unsafe_allow_html=True)
+
+# 4. Load Model Logic (Cached)
+@st.cache_resource
+def load_trained_model():
+    return keras.models.load_model('cat_dog_model.keras')
+
+try:
+    model = load_trained_model()
+except Exception as e:
+    st.error(f"Error loading model. Check if 'cat_dog_model.keras' is in the project folder. Error: {e}")
+    st.stop()
+
+# 5. File Upload Interface wrapped in a styled container block
+st.markdown('<div class="modern-card">', unsafe_allow_html=True)
+uploaded_file = st.file_uploader("Drop your image file here", type=["jpg", "jpeg", "png"])
+st.markdown('</div>', unsafe_allow_html=True)
+
+if uploaded_file is not None:
+    # Build structural layout grid columns to split image presentation from output metrics
+    col1, col2 = st.columns([1.2, 1])
+    
+    with col1:
+        image = Image.open(uploaded_file)
+        st.markdown('<div style="margin-top: 1.5rem;">', unsafe_allow_html=True)
+        st.image(image, caption='Target Subject', use_container_width=True)
+        st.markdown('</div>', unsafe_allow_html=True)
+        
+    with col2:
+        with st.spinner('Running neural network pass...'):
+            img_array = np.array(image)
+            resized_image = cv2.resize(img_array, (128, 128))
+            scaled_image = resized_image / 255.0
+            input_image_reshaped = np.reshape(scaled_image, [1, 128, 128, 3])
+            
+            # Predict
+            prediction = model.predict(input_image_reshaped)
+            pred_label = np.argmax(prediction)
+            
+            # Grab raw probability scores
+            cat_probability = prediction[0][0]
+            dog_probability = prediction[0][1]
+            
+        # Display the modernized output card block inside column 2 area
+        st.markdown('<div style="margin-top: 1rem;">', unsafe_allow_html=True)
+        if pred_label == 1:
+            st.markdown(f"""
+                <div class="result-box" style="border-left-color: #10b981; background: rgba(16, 185, 129, 0.08);">
+                    <div class="result-title">🐶 Prediction: It's a Dog!</div>
+                    <div class="result-conf" style="color: #34d399;">Model Confidence: {dog_probability * 100:.2f}%</div>
+                </div>
+            """, unsafe_allow_html=True)
+        else:
+            st.markdown(f"""
+                <div class="result-box" style="border-left-color: #6366f1; background: rgba(99, 102, 241, 0.08);">
+                    <div class="result-title">🐱 Prediction: It's a Cat!</div>
+                    <div class="result-conf" style="color: #818cf8;">Model Confidence: {cat_probability * 100:.2f}%</div>
+                </div>
+            """, unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
